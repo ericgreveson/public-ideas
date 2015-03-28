@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Optimization Illustrated</title>
+    <link rel="stylesheet" type="text/css" href="optimization.css" />
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+  </head>
+  <body>
+    <h1>Optimization Illustrated</h1>
+    <blockquote>
+      <q>In mathematics, computer science, economics, or management science, mathematical optimization (alternatively, optimization
+      or mathematical programming) is the selection of a best element (with regard to some criteria) from some set of available
+      alternatives</q> - <a href="http://en.wikipedia.org/wiki/Mathematical_optimization">Wikipedia, yesterday</a>
+    </blockquote>
+    <p>What is optimization all about? Essentially, optimization is the process of finding the &ldquo;best&rdquo; value of something.
+    For example, if we're trying to make a drinks can, the <i>best</i> solution might be the cheapest one that can
+    withstand the pressure from the fizzy drink (and the occasional droppage). If we're making a pressurized fuselage for an aircraft,
+    the <i>best</i> solution might be the one with the lightest weight whilst being strong enough, regardless of cost. If we're
+    designing a cardboard box, we might want to figure out which shape of box can hold the most stuff while using the least amount
+    of cardboard.</p>
+
+    <h2>Some terminology</h2>
+    <p>To solve quantitative problems, we need to define an <strong>objective function</strong> that describes what is &ldquo;best&rdquo;
+    in terms of the <strong>parameters</strong> of the problem. Let's call this objective function \(f\), and let's call the parameters
+    \(\mathbf{x}\) (note that \(\mathbf{x}\) is a <i>vector</i>, unless we're just looking at an objective function with a single parameter, in which case
+    we can call it \(x\) instead). Therefore, in general, our objective function is \(f(\mathbf{x})\), i.e. a scalar function with a vector parameter. By convention, we say that the &ldquo;best&rdquo; value of the
+    objective function is the <i>minimum</i>. If we happen to have some metric where larger values are &ldquo;better&rdquo;, we can
+    easily turn this into a standard objective function simply by taking the negative value of the function (or if we know all values
+    in the metric function are positive, we could equivalently choose its reciprocal as the objective).</p>
+
+    <h2>An example</h2>
+    <p>In our cardboard box example, the parameters of shape are</p>
+    <ul>
+      <li>width, \(w\)</li>
+      <li>height, \(h\)</li>
+      <li>depth, \(d\)</li>
+    </ul>
+    <p>We want <i>the highest box volume per amount of cardboard used</i>. As previously stated, by convention, our objective function
+    should have its best value at a minimum, so we can rephrase this as <i>the lowest amount of cardboard per unit volume</i>.
+    As volume \(V = w h d\), and area of cardboard \(A = 2 w h + 2 w d + 2 h d\) (i.e. a closed six-sided box), then</p>
+    <p>$$objective = \frac{A}{V} = \frac{2 ( w h + w d + h d )}{w h d}$$</p>
+    <p>We'll come back to this example later, as you can see that it's already hard to visualize this problem due to the three
+    parameters (we can do a standard 2D plot for one parameter, and a surface plot or heatmap for 2 parameters, but plotting a
+    function of three variables is not easy). Instead, we will start out with one of the easiest problems possible.</p>
+
+    <h2>A simple function</h2>
+    <p>The simplest type of problem occurs when the objective function has just one parameter (a <strong>one-dimensional</strong>
+    or <strong>1-D</strong> problem). Let's call our one parameter \( x \) (well, it makes the graphs easier to understand, at least).
+    For a simple objective function in \( x \) with a single minimum, let's go with</p>
+    <p>$$f(x) = x^2$$</p>
+    <p>At this point, you might be wondering if I've been mis-selling the &ldquo;Illustrated&rdquo; part. Well, that's fair enough,
+    so here's an illustration of our simple objective function:</p>
+    <div id="simple-function-chart" class="chart"></div>
+    <p>Yay.</p>
+    <p>It should be obvious that the minimum (and therefore optimum - remember our convention) is the point at \( (0, 0) \) - that is,
+    \(x = 0\) and \(f(x) = x^2 = 0\). We can see this because we are humans with eyes (and a bit of maths knowledge). However, in
+    general, our eyes are not going to be much use (did you try to visualize the three-parameter problem with the cardboard box?)
+    and so we need to use numerical methods.</p>
+
+    <h3>First approach: Analytic</h3>
+    <p>We can start with an analytic approach. If you've done calculus (differentiation and integration), you might remember that
+    the minimum of a function has \(\frac{\mathrm d f}{\mathrm d x} = 0\) (the gradient is flat) and
+    \(\frac{\mathrm d^2 f}{\mathrm d x^2} \gt 0 \) (the function is increasing). Look at the graph above, and you will see that
+    both of these are true at \( (0, 0) \). If we didn't have the graph, however, we could run through the maths as follows:</p>
+    <p>$$\frac{\mathrm d f}{\mathrm d x} = 2 x = 0 \Rightarrow x = 0$$</p>
+    <p>$$\frac{\mathrm d f}{\mathrm d x} = 2 x = 0 \Rightarrow x = 0$$</p>
+    <p>Great. So this is all fine, but we will have a problem with the analytic approach when the objective functions become a bit
+    more complicated. Imagine trying to do this with a function in hundreds of parameters, for example... even with a fancy
+    software package like <a href="http://www.wolfram.com/mathematica/">Mathematica</a>, you'd quickly run into trouble.</p>
+
+    <h3>Second approach: Sampling</h3>
+    <p>An easy thing to try with a computer is simply to sample the function and then pick the parameter with the lowest objective
+    function value. This approach depends on some new <i>tuning parameters</i> (that is, parameters associated with the solver
+    approach, rather than the problem itself). For this 1-D problem, we need to decide on three tuning parameters: the start of
+    the sampling range, the sampling step size, and the number of samples (or equivalently, the end of the sampling range). Let's
+    start off by cheating, and selecting the values of these tuning parameters based on looking at the graph:</p>
+    <ul>
+      <li>Start of range, \( \alpha = -1 \)</li>
+      <li>End of range, \( \beta = 1 \)</li>
+      <li>Sample step size, \( \delta = 0.1 \)</li>
+    </ul>
+    <p>Since this is now a <i>bona fide</i> solver technique that we could implement on a computer, let's implement it on a computer
+    (in JavaScript, since this is the Internet):</p>
+    <script src="https://gist.github.com/ericgreveson/d8059838199a71fa0ec6.js"></script>
+    <p>If we had more parameters in the problem, we would need another three of these tuning parameters for each additional dimension.
+    </p>
+    <script src="optimization.js"></script>
+  </body>
+</html>
